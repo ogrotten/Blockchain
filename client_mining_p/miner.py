@@ -1,9 +1,7 @@
 import hashlib
 import requests
-
 import sys
 import json
-
 
 def proof_of_work(block):
 	
@@ -15,7 +13,7 @@ def proof_of_work(block):
 	
 	block_string = json.dumps(block, sort_keys=True)
 	proof = 0
-	while not self.valid_proof(block_string, proof):
+	while not valid_proof(block_string, proof):
 		proof += 1
 	return proof
 	
@@ -33,7 +31,7 @@ def valid_proof(block_string, proof):
 	
 	guess = f"{block_string}{proof}".encode()
 	guess_hash = hashlib.sha256(guess).hexdigest()
-	return(guess_hash[:4] == "0000")
+	return(guess_hash[:6] == "000000")
 
 if __name__ == '__main__':
 	# What is the server address? IE `python3 miner.py https://server.com/api/`
@@ -49,9 +47,20 @@ if __name__ == '__main__':
 	f.close()
 
 	# Run forever until interrupted
+	count = 0
 	while True:
+		""" 
+		IF
+			( whatever the response from other )
+			( has json data {"message": "New Block Forged"} )
+		THEN
+			count++ (from line 52)
+		ELSE
+			try again
+		
+		"""
 		r = requests.get(url=node + "/last_block")
-		# Handle non-json response
+
 		try:
 			data = r.json()
 		except ValueError:
@@ -61,8 +70,9 @@ if __name__ == '__main__':
 			break
 
 		# TODO: Get the block from `data` and use it to look for a new proof
-		# new_proof = ???
-		begin = time.time()
+
+
+		new_proof = proof_of_work(data)
 
 		# When found, POST it to the server {"proof": new_proof, "id": id}
 		post_data = {"proof": new_proof, "id": id}
@@ -73,4 +83,6 @@ if __name__ == '__main__':
 		# TODO: If the server responds with a 'message' 'New Block Forged'
 		# add 1 to the number of coins mined and print it.  Otherwise,
 		# print the message from the server.
+  
+
 		pass
